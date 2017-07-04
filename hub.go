@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/dustin/go-broadcast"
 	"github.com/garyburd/redigo/redis"
@@ -19,7 +19,7 @@ func newHub() (*Hub, error) {
 	prc, err := redis.Dial("tcp", redisAddr)
 
 	if err != nil {
-		log.Println("Connect to redis error", err)
+		log.Fatalln("Connect to redis error", err)
 		return nil, err
 	}
 
@@ -40,12 +40,12 @@ func (hub *Hub) start() {
 	for {
 		switch v := hub.psc.Receive().(type) {
 		case redis.Message:
-			log.Println("received: " + string(v.Data))
+			log.Infoln("received: " + string(v.Data))
 			hub.broaddcaster.Submit(v.Data)
 		case redis.Subscription:
 			break
 		case error:
-			log.Println(v)
+			log.Fatalln(v)
 			return
 		}
 	}

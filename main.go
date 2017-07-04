@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/garyburd/redigo/redis"
 	"gopkg.in/gin-gonic/gin.v1"
@@ -15,7 +16,7 @@ import (
 
 var (
 	redisAddr = os.Getenv("REDISADDR")
-	redisPs   = ""
+	redisPs   = os.Getenv("REDISPS")
 	redisDB   = os.Getenv("REDISDB")
 )
 
@@ -33,9 +34,22 @@ func testSend(hub *Hub) {
 		j := message{fmt.Sprintf("%d - the time is %v", i, time.Now())}
 		js, _ := json.Marshal(j)
 		c.Do("PUBLISH", "messagebox:sse", js)
-		log.Printf("Sent message %d ", i)
+		log.Infoln(fmt.Sprintf("message: %d", i))
 		time.Sleep(3 * 1e9)
 	}
+}
+
+func init() {
+	log.SetFormatter(&log.TextFormatter{})
+	log.SetOutput(os.Stdout)
+	file, err := os.OpenFile("./logs/messagebox.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err == nil {
+		log.SetOutput(file)
+	} else {
+		log.Info("Failed to log to file, using default stderr")
+	}
+
+	log.SetLevel(log.WarnLevel)
 }
 
 func main() {
@@ -44,11 +58,11 @@ func main() {
 	go hub.start()
 
 	if err != nil {
-		log.Println(err)
+		log.Fatalln(err)
 		return
 	}
 
-	//go testSend(hub)
+	go testSend(hub)
 
 	router := gin.Default()
 

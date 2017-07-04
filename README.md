@@ -28,3 +28,28 @@ REDISDB=0 // 配置的redis DB
         sse.onerror = function(event) {
         console.log(event);
 ```
+
+## How to dockerize this service
+
+### 1. 为了得到小的image，我们build outside dockerfile
+
+注意编译的系统应选择cross-linux 64，以适应alpine docker image base
+
+```
+go build -o MessageBox 
+
+```
+### 2. build docker
+
+```
+docker build -t lzhao/messagebox
+
+```
+### 3. start up service
+
+利用docker-compose启动服务
+
+```
+docker-compose up -f docker-compose.yml -d --force-recreate --remove-orphans
+```
+

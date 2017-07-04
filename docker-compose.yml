@@ -1,0 +1,13 @@
+version: '2'
+services:
+  messagebox:
+    image: lzhao/messagebox
+    ports:
+        - "9977:9977"
+    volumes:
+        - "./logs:/app/logs"
+    environment:
+        REDISADDR: 127.0.0.1:6379
+        REDISDB: 0
+        REDISPS: ""
+    network_mode: host
